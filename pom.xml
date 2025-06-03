@@ -10,7 +10,7 @@
     <artifactId>dndms-ms3-combat-arena</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>dndms-ms3-combat-arena</name>
-    <description>Microservicio para simular encuentros y combates D&D</description>
+    <description>Microservicio para simular encuentros y combates DnD</description>
 
     <properties>
         <java.version>17</java.version>
