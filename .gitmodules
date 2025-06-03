@@ -1,0 +1,3 @@
+[submodule "shared-dtos-module"]
+	path = shared-dtos-module
+	url = https://github.com/xavierux/dndms-event-dtos
