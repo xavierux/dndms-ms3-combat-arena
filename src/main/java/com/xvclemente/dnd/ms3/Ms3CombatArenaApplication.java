@@ -2,10 +2,10 @@ package com.xvclemente.dnd.ms3;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.kafka.annotation.EnableKafka; // Habilitar Kafka
+import org.springframework.kafka.annotation.EnableKafka;
 
 @SpringBootApplication
-@EnableKafka // Asegúrate de tener esta anotación si usas @KafkaListener
+@EnableKafka
 public class Ms3CombatArenaApplication {
 
     public static void main(String[] args) {
