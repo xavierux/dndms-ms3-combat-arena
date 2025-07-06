@@ -1,36 +1,53 @@
 # D&D Microservices - MS3: Combat Arena (`dndms-ms3-combat-arena`)
 
-## Propósito
-Este microservicio orquesta y simula los encuentros de combate definidos por una aventura y los participantes (PJs y ENs) que se han unido a ella.
+## 🧭 Propósito
+Este microservicio es el motor de simulación del sistema. Su función es orquestar y resolver los encuentros de combate, consumiendo la información de la aventura y sus participantes para determinar y publicar los resultados.
 
-## Responsabilidades Clave
-- Consumir la información de la aventura y los participantes.
-- Simular el número de encuentros especificado en la aventura.
-- Aplicar reglas de combate simplificadas para determinar los resultados de cada enfrentamiento.
-- Publicar los resultados de cada combate individual.
-- Publicar el resultado final de la aventura (PJs ganadores, oro otorgado).
+## 🧱 Responsabilidades Clave
+* **Correlación de Eventos:** Consume y une los eventos `AventuraCreadaEvent` (de MS1) y `ParticipantesListosParaAventuraEvent` (de MS2) para una misma aventura, utilizando un servicio interno (`PendingAdventureService`) para esperar a que todos los datos estén listos.
+* **Simulación de Combate Grupal:** Una vez que los datos de una aventura están completos, ejecuta una simulación de combate por turnos entre el bando de los PJs y el de los ENs.
+* **Publicación de Resultados de Combate:** Emite un evento `ResultadoCombateIndividualEvent` cada vez que un combatiente derrota a otro.
+* **Publicación del Resultado Final:** Al concluir la batalla, determina el resultado general de la aventura (victoria o derrota de los PJs) y publica un único evento `AventuraFinalizadaEvent` con el resumen.
 
-## Tecnologías
-- Java, Spring Boot
-- Spring Kafka (Productor y Consumidor)
-- DTOs compartidos vía Git Submodule (`dndms-event-dtos` referenciado en `shared-dtos-module`)
+---
+## ⚙️ Stack Tecnológico
+* **Lenguaje/Framework:** Java 17, Spring Boot 3.3.0
+* **Gestión de Dependencias:** Maven
+* **Comunicación de Eventos:** Spring Kafka (Productor y Consumidor).
+* **DTOs Compartidos:** Consumidos como un Git Submodule desde el repositorio `dndms-event-dtos`.
+* **Contenerización:** Docker.
 
-## Eventos Publicados
-- `ResultadoCombateIndividualEvent` (al topic: `combate-resultados-topic`)
-- `AventuraFinalizadaEvent` (al topic: `aventura-finalizada-topic`)
+---
+## 📤 Arquitectura de Eventos
 
-## Eventos Consumidos
-- `AventuraCreadaEvent` (del topic: `aventuras-topic`)
-- `ParticipantesListosParaAventuraEvent` (del topic: `participantes-topic`)
+#### Eventos Publicados
+* `ResultadoCombateIndividualEvent` (al topic: `combate-resultados-topic`)
+* `AventuraFinalizadaEvent` (al topic: `aventura-finalizada-topic`)
 
-## API Endpoints
-- Ninguno planeado inicialmente para exposición pública. Podría tener APIs internas si otros servicios necesitan consultarlo.
+#### Eventos Consumidos
+* `AventuraCreadaEvent` (del topic: `aventuras-topic`)
+* `ParticipantesListosParaAventuraEvent` (del topic: `participantes-topic`)
 
-## Cómo Construir y Ejecutar Localmente
-1. Asegúrate de que los submódulos Git estén inicializados y actualizados:
-   `git submodule init`
-   `git submodule update --remote`
-2. Construye con Maven:
-   `mvn clean package`
-3. Ejecuta la aplicación (requiere Kafka corriendo):
-   `java -jar target/dndms-ms3-combat-arena-0.0.1-SNAPSHOT.jar`
+---
+## 📡 API Endpoints
+* Ninguno. Este servicio opera como un procesador de backend puro y no expone ninguna API REST pública. Su única interacción con el exterior es a través de eventos de Kafka.
+
+---
+## 🐳 Entorno de Desarrollo y Configuración
+
+### Configuración
+La configuración de la aplicación se gestiona a través de perfiles de Spring.
+
+* **`application.properties`**: Contiene la configuración para ejecutar localmente desde un IDE, apuntando a `localhost`.
+    * `server.port=8083`
+* **`application-docker.properties`**: Anula propiedades para el entorno Docker, apuntando a los nombres de servicio de la red de Docker (ej. `kafka:29092`).
+
+### Ejecución
+Este microservicio está diseñado para ser orquestado por el archivo `docker-compose.yml` principal ubicado en el repositorio de `dndms-ms1-adventure-forge`.
+
+1.  **Asegúrate de que la definición** para `dndms-ms3-combat-arena-app` esté presente y correcta en el `docker-compose.yml`.
+2.  **Desde la raíz del proyecto `dndms-ms1-adventure-forge`**, ejecuta:
+    ```bash
+    # El flag --build es importante si has hecho cambios en el código de MS3
+    docker-compose up -d --build
+    ```
